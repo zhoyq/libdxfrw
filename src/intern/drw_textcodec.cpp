@@ -471,18 +471,23 @@ std::string DRW_ConvUTF16::toUtf8(std::string *s){//RLZ: pending to write
 }
 
 std::string DRW_ExtConverter::convertByiconv(const char *in_encode,
-                                             const char *out_encode,
-                                             const std::string *s) {
-    const int BUF_SIZE = 1000;
-    static char in_buf[BUF_SIZE], out_buf[BUF_SIZE];
+	const char *out_encode,
+	const std::string *s) {
+	const int BUF_SIZE = 1000;
+	static char in_buf[BUF_SIZE], out_buf[BUF_SIZE];
 
-    char *in_ptr = in_buf, *out_ptr = out_buf;
-    strncpy(in_buf, s->c_str(), BUF_SIZE);
+	const char *in_ptr = in_buf;
+	char *out_ptr = out_buf;
+	//strncpy(in_buf, s->c_str(), BUF_SIZE);
+	strncpy_s(in_buf, BUF_SIZE, s->c_str(), BUF_SIZE);
 
-    iconv_t ic;
-    ic = iconv_open(out_encode, in_encode);
+	iconv_t ic;
+	ic = iconv_open(out_encode, in_encode);
+	if (ic == (iconv_t)-1) {
+		return std::string(s->c_str());
+	}
     size_t il = BUF_SIZE-1, ol = BUF_SIZE-1;
-    iconv(ic , const_cast<const char**>(&in_ptr), &il, &out_ptr, &ol);
+    iconv(ic , &in_ptr, &il, &out_ptr, &ol);
     iconv_close(ic);
 
     return std::string(out_buf);
